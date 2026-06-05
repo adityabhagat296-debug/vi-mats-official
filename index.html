@@ -58,8 +58,19 @@
   .hero {
     height: 100vh;
     display: flex; flex-direction: column;
-    justify-content: center; align-items: center;
+    justify-content: flex-end; align-items: center;
     position: relative; overflow: hidden;
+    padding-bottom: 7rem;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0; z-index: 1;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, rgba(13,11,9,0.5) 100%),
+      linear-gradient(to top, rgba(13,11,9,0.92) 0%, transparent 45%),
+      linear-gradient(to bottom, rgba(13,11,9,0.55) 0%, transparent 22%);
+    pointer-events: none;
   }
 
   #three-canvas {
@@ -70,6 +81,7 @@
   .hero-content {
     position: relative; z-index: 2;
     text-align: center; pointer-events: none;
+    width: 100%;
   }
 
   .hero-eyebrow {
@@ -545,161 +557,358 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+// ─── RENDERER ───────────────────────────────────────────────────────────────
 const canvas = document.getElementById('three-canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
 
+// ─── SCENE & CAMERA ─────────────────────────────────────────────────────────
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 0.5, 5);
+// Subtle dark fog for depth
+scene.fog = new THREE.FogExp2(0x0d0b09, 0.045);
 
-const ambient = new THREE.AmbientLight(0xfff5e0, 0.4);
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
+// Start from a dramatic 3/4 above angle
+camera.position.set(0, 3.2, 5.5);
+camera.lookAt(0, 0, 0);
+
+// ─── LIGHTING ───────────────────────────────────────────────────────────────
+// Warm ambient base
+const ambient = new THREE.AmbientLight(0xffe8c0, 0.25);
 scene.add(ambient);
-const key = new THREE.DirectionalLight(0xc8a96e, 1.8);
-key.position.set(3, 4, 3);
-scene.add(key);
-const fill = new THREE.DirectionalLight(0xe8d5a8, 0.6);
-fill.position.set(-3, 1, 2);
-scene.add(fill);
-const rim = new THREE.DirectionalLight(0xffffff, 0.4);
-rim.position.set(0, -2, -3);
-scene.add(rim);
 
+// Key light — warm gold spot from top-right
+const keyLight = new THREE.SpotLight(0xffd080, 4.5);
+keyLight.position.set(4, 6, 3);
+keyLight.angle = 0.45;
+keyLight.penumbra = 0.6;
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(1024, 1024);
+scene.add(keyLight);
+
+// Cool blue-white rim from behind
+const rimLight = new THREE.DirectionalLight(0xadd8ff, 1.2);
+rimLight.position.set(-3, 1, -4);
+scene.add(rimLight);
+
+// Soft fill from below-left
+const fillLight = new THREE.PointLight(0xc8a96e, 1.5, 12);
+fillLight.position.set(-3, -1.5, 2);
+scene.add(fillLight);
+
+// Dynamic animated light that orbits (gives the shimmer feel)
+const orbitLight = new THREE.PointLight(0xfff0d0, 2.5, 8);
+scene.add(orbitLight);
+
+// ─── MAT TEXTURE ────────────────────────────────────────────────────────────
 function createMatTexture() {
   const c = document.createElement('canvas');
-  c.width = 512; c.height = 384;
+  c.width = 1024; c.height = 768;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#1C2A3A';
-  ctx.fillRect(0, 0, 512, 384);
-  const patternCanvas = document.createElement('canvas');
-  patternCanvas.width = 8; patternCanvas.height = 8;
-  const pCtx = patternCanvas.getContext('2d');
-  pCtx.fillStyle = '#243447';
-  pCtx.fillRect(0, 0, 8, 8);
-  pCtx.fillStyle = '#1C2A3A';
-  pCtx.fillRect(0, 0, 4, 4);
-  pCtx.fillRect(4, 4, 4, 4);
-  const pattern = ctx.createPattern(patternCanvas, 'repeat');
-  ctx.fillStyle = pattern;
-  ctx.globalAlpha = 0.7;
-  ctx.fillRect(0, 0, 512, 384);
-  ctx.globalAlpha = 1;
-  ctx.strokeStyle = 'rgba(200,169,110,0.25)';
+
+  // Deep navy gradient base
+  const grad = ctx.createLinearGradient(0, 0, 1024, 768);
+  grad.addColorStop(0,   '#162238');
+  grad.addColorStop(0.5, '#1C2A3A');
+  grad.addColorStop(1,   '#0f1a28');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1024, 768);
+
+  // Fine woven grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
   ctx.lineWidth = 1;
-  for (let i = -50; i < 600; i += 40) {
-    for (let j = -50; j < 450; j += 40) {
+  for (let x = 0; x < 1024; x += 12) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 768); ctx.stroke();
+  }
+  for (let y = 0; y < 768; y += 12) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1024, y); ctx.stroke();
+  }
+
+  // Diagonal weave overlay
+  ctx.strokeStyle = 'rgba(200,169,110,0.07)';
+  ctx.lineWidth = 0.8;
+  for (let i = -800; i < 1800; i += 24) {
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + 768, 768); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i - 768, 768); ctx.stroke();
+  }
+
+  // Gold diamond motif pattern
+  ctx.strokeStyle = 'rgba(200,169,110,0.18)';
+  ctx.lineWidth = 1;
+  for (let i = -60; i < 1100; i += 80) {
+    for (let j = -60; j < 840; j += 60) {
       ctx.beginPath();
-      ctx.moveTo(i, j + 20);
-      ctx.lineTo(i + 20, j);
-      ctx.lineTo(i + 40, j + 20);
-      ctx.lineTo(i + 20, j + 40);
+      ctx.moveTo(i,      j + 30);
+      ctx.lineTo(i + 40, j);
+      ctx.lineTo(i + 80, j + 30);
+      ctx.lineTo(i + 40, j + 60);
       ctx.closePath();
       ctx.stroke();
     }
   }
-  ctx.strokeStyle = 'rgba(200,169,110,0.5)';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(12, 9, 488, 366);
-  ctx.strokeStyle = 'rgba(200,169,110,0.2)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(20, 15, 472, 354);
-  ctx.fillStyle = 'rgba(200,169,110,0.9)';
-  ctx.font = 'bold 36px serif';
+
+  // Outer gold border — thick
+  ctx.strokeStyle = 'rgba(200,169,110,0.75)';
+  ctx.lineWidth = 5;
+  ctx.strokeRect(18, 14, 988, 740);
+
+  // Inner gold border — thin
+  ctx.strokeStyle = 'rgba(200,169,110,0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(30, 24, 964, 720);
+
+  // Corner ornaments
+  const corners = [[30,24],[994,24],[30,744],[994,744]];
+  corners.forEach(([cx,cy]) => {
+    ctx.strokeStyle = 'rgba(200,169,110,0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+
+  // Centre glow
+  const glowGrad = ctx.createRadialGradient(512, 384, 0, 512, 384, 300);
+  glowGrad.addColorStop(0,   'rgba(200,169,110,0.08)');
+  glowGrad.addColorStop(1,   'rgba(200,169,110,0)');
+  ctx.fillStyle = glowGrad;
+  ctx.fillRect(0, 0, 1024, 768);
+
+  // V·I branding
   ctx.textAlign = 'center';
-  ctx.fillText('V · I', 256, 175);
-  ctx.font = '16px sans-serif';
-  ctx.fillStyle = 'rgba(200,169,110,0.6)';
-  ctx.fillText('M A T S', 256, 210);
-  ctx.font = '11px sans-serif';
-  ctx.fillStyle = 'rgba(200,169,110,0.4)';
-  ctx.fillText('PROTECTS · DECORATES · ELEGANT', 256, 240);
+  ctx.shadowColor = 'rgba(200,169,110,0.6)';
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = 'rgba(200,169,110,1)';
+  ctx.font = '600 72px Georgia, serif';
+  ctx.fillText('V · I', 512, 340);
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = 'rgba(200,169,110,0.65)';
+  ctx.font = '300 28px Georgia, serif';
+  ctx.letterSpacing = '12px';
+  ctx.fillText('M  A  T  S', 512, 400);
+
+  ctx.fillStyle = 'rgba(200,169,110,0.35)';
+  ctx.font = '300 16px sans-serif';
+  ctx.fillText('PROTECTS  ·  DECORATES  ·  ELEGANT', 512, 450);
+
   return new THREE.CanvasTexture(c);
 }
 
-const matTexture = createMatTexture();
+function createBackTexture() {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 768;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#0f1a28';
+  ctx.fillRect(0, 0, 1024, 768);
+  ctx.strokeStyle = 'rgba(200,169,110,0.12)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < 1024; x += 16) {
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,768); ctx.stroke();
+  }
+  for (let y = 0; y < 768; y += 16) {
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(1024,y); ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(200,169,110,0.5)';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(16, 12, 992, 744);
+  // Product info text
+  ctx.fillStyle = 'rgba(200,169,110,0.5)';
+  ctx.font = '22px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('SIZE: 12 × 17 INCHES  ·  48 PCS', 512, 200);
+  ctx.fillText('MFG: JUNE 2026  ·  BEST BEFORE: 24 MONTHS', 512, 250);
+  ctx.fillStyle = 'rgba(200,169,110,0.3)';
+  ctx.font = '18px sans-serif';
+  ctx.fillText('NON-TOXIC  ·  FOOD SAFE  ·  RECYCLABLE', 512, 310);
+  ctx.fillStyle = 'rgba(200,169,110,0.6)';
+  ctx.font = '16px sans-serif';
+  ctx.fillText('Customer Care: 9999999999', 512, 560);
+  ctx.fillText('AMAR PRINTERY, AHMEDABAD', 512, 590);
+  return new THREE.CanvasTexture(c);
+}
+
+// ─── MAT GEOMETRY ───────────────────────────────────────────────────────────
 const matGroup = new THREE.Group();
 
-const matGeo = new THREE.BoxGeometry(3.4, 0.04, 2.55, 8, 1, 6);
-const matMat = new THREE.MeshStandardMaterial({ map: matTexture, roughness: 0.7, metalness: 0.1 });
-const mat = new THREE.Mesh(matGeo, matMat);
-matGroup.add(mat);
+const frontTex = createMatTexture();
+const backTex  = createBackTexture();
+const sideMat  = new THREE.MeshStandardMaterial({ color: 0x1a2535, roughness: 0.7, metalness: 0.1 });
 
-const edgeMat = new THREE.MeshStandardMaterial({ color: 0xc8a96e, metalness: 0.7, roughness: 0.3 });
-const eTop = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.045, 0.04), edgeMat);
-eTop.position.set(0, 0.001, -1.255); matGroup.add(eTop);
-const eBot = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.045, 0.04), edgeMat);
-eBot.position.set(0, 0.001, 1.255); matGroup.add(eBot);
-const eL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.045, 2.55), edgeMat);
-eL.position.set(-1.68, 0.001, 0); matGroup.add(eL);
-const eR = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.045, 2.55), edgeMat);
-eR.position.set(1.68, 0.001, 0); matGroup.add(eR);
+// Use per-face materials for BoxGeometry [+x,-x,+y,-y,+z,-z]
+const matMaterials = [
+  sideMat,                                                               // right
+  sideMat,                                                               // left
+  new THREE.MeshStandardMaterial({ map: frontTex, roughness: 0.55, metalness: 0.15 }), // top (front face)
+  new THREE.MeshStandardMaterial({ map: backTex,  roughness: 0.65, metalness: 0.05 }), // bottom (back face)
+  sideMat,                                                               // front edge
+  sideMat,                                                               // back edge
+];
 
-for (let i = 1; i <= 3; i++) {
-  const stackMat = new THREE.Mesh(
-    new THREE.BoxGeometry(3.4, 0.04, 2.55),
-    new THREE.MeshStandardMaterial({ color: 0x1a2535, roughness: 0.8 })
+const matGeo = new THREE.BoxGeometry(3.4, 0.06, 2.55, 1, 1, 1);
+const mainMat = new THREE.Mesh(matGeo, matMaterials);
+mainMat.castShadow = true;
+mainMat.receiveShadow = true;
+matGroup.add(mainMat);
+
+// Gold edge trim — all 4 sides
+const goldMat = new THREE.MeshStandardMaterial({ color: 0xd4a843, metalness: 0.85, roughness: 0.15 });
+const trimH = 0.065;
+[[-1.255, 3.4, 0.04], [1.255, 3.4, 0.04]].forEach(([z, w, d], i) => {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, trimH, d), goldMat);
+  m.position.set(0, 0, z); matGroup.add(m);
+});
+[[-1.68, 0.04, 2.55], [1.68, 0.04, 2.55]].forEach(([x, w, d]) => {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, trimH, d), goldMat);
+  m.position.set(x, 0, 0); matGroup.add(m);
+});
+
+// Corner accent spheres
+const cornerGeo = new THREE.SphereGeometry(0.045, 8, 8);
+[[-1.68,-1.255],[1.68,-1.255],[-1.68,1.255],[1.68,1.255]].forEach(([x,z]) => {
+  const c = new THREE.Mesh(cornerGeo, goldMat);
+  c.position.set(x, 0.035, z); matGroup.add(c);
+});
+
+// Stacked mats underneath — fanned out slightly
+for (let i = 1; i <= 4; i++) {
+  const sm = new THREE.Mesh(
+    new THREE.BoxGeometry(3.4, 0.055, 2.55),
+    new THREE.MeshStandardMaterial({ color: new THREE.Color(0.08 + i*0.01, 0.14 + i*0.01, 0.22 + i*0.01), roughness: 0.85 })
   );
-  stackMat.position.set(0.02 * i, -0.04 * i, -0.02 * i);
-  matGroup.add(stackMat);
+  sm.position.set(i * 0.025, -0.055 * i, i * 0.018);
+  sm.rotation.y = i * 0.015;
+  matGroup.add(sm);
 }
+
+// Reflection plane (dark mirror under mat)
+const planeGeo = new THREE.PlaneGeometry(8, 6);
+const planeMat = new THREE.MeshStandardMaterial({
+  color: 0x080605, roughness: 0.05, metalness: 0.9,
+  transparent: true, opacity: 0.55
+});
+const plane = new THREE.Mesh(planeGeo, planeMat);
+plane.rotation.x = -Math.PI / 2;
+plane.position.y = -0.3;
+plane.receiveShadow = true;
+scene.add(plane);
+
+// Ghost reflection of mat on plane
+const reflectionMat = new THREE.Mesh(
+  new THREE.BoxGeometry(3.4, 0.01, 2.55),
+  new THREE.MeshBasicMaterial({ map: frontTex, transparent: true, opacity: 0.12 })
+);
+reflectionMat.position.y = -0.31;
+reflectionMat.rotation.x = Math.PI; // flip
+scene.add(reflectionMat);
+
 scene.add(matGroup);
 
-const particles = new THREE.BufferGeometry();
-const count = 80;
-const positions = new Float32Array(count * 3);
-for (let i = 0; i < count * 3; i++) { positions[i] = (Math.random() - 0.5) * 12; }
-particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-const particleMat = new THREE.PointsMaterial({ color: 0xc8a96e, size: 0.015, transparent: true, opacity: 0.4 });
-const particleSystem = new THREE.Points(particles, particleMat);
-scene.add(particleSystem);
+// ─── PARTICLES ──────────────────────────────────────────────────────────────
+// Two layers: close gold dust + far starfield
+function makeParticles(count, spread, size, color, opacity) {
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count * 3; i++) pos[i] = (Math.random() - 0.5) * spread;
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  return new THREE.Points(geo, new THREE.PointsMaterial({ color, size, transparent: true, opacity }));
+}
+const dustNear = makeParticles(120, 7,  0.022, 0xc8a96e, 0.55);
+const dustFar  = makeParticles(200, 18, 0.01,  0xffeebb, 0.2);
+scene.add(dustNear, dustFar);
 
-let scrollY = 0;
-let targetRotX = 0.15, targetRotY = 0;
-let currentRotX = 0.15, currentRotY = 0;
-let mouseX = 0, mouseY = 0;
+// ─── SCROLL & MOUSE STATE ───────────────────────────────────────────────────
+let scrollY  = 0;
+let mouseX   = 0, mouseY = 0;
+let targetMouseX = 0, targetMouseY = 0;
 
-window.addEventListener('scroll', () => {
-  scrollY = window.scrollY;
-  const heroH = document.getElementById('hero').offsetHeight;
-  const progress = Math.min(scrollY / heroH, 1);
-  targetRotX = 0.15 + progress * Math.PI * 0.6;
-  targetRotY = progress * Math.PI * 1.2;
+window.addEventListener('scroll', () => { scrollY = window.scrollY; });
+window.addEventListener('mousemove', e => {
+  targetMouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
+  targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
 });
 
-window.addEventListener('mousemove', (e) => {
-  mouseX = (e.clientX / window.innerWidth - 0.5) * 0.5;
-  mouseY = (e.clientY / window.innerHeight - 0.5) * 0.2;
-});
-
+// ─── ANIMATE ────────────────────────────────────────────────────────────────
 const clock = new THREE.Clock();
 
 function animate() {
   requestAnimationFrame(animate);
   const t = clock.getElapsedTime();
-  const inHero = scrollY < document.getElementById('hero').offsetHeight * 0.5;
-  if (inHero) {
-    matGroup.position.y = Math.sin(t * 0.8) * 0.08;
-    currentRotX += (0.15 + mouseY * 0.3 - currentRotX) * 0.04;
-    currentRotY += (mouseX * 0.5 + t * 0.15 - currentRotY) * 0.03;
-  } else {
-    currentRotX += (targetRotX - currentRotX) * 0.05;
-    currentRotY += (targetRotY - currentRotY) * 0.05;
-  }
-  matGroup.rotation.x = currentRotX;
-  matGroup.rotation.y = currentRotY;
-  particleSystem.rotation.y = t * 0.02;
-  particleSystem.rotation.x = t * 0.01;
+
+  // Smooth mouse follow
+  mouseX += (targetMouseX - mouseX) * 0.05;
+  mouseY += (targetMouseY - mouseY) * 0.05;
+
+  const heroH = document.getElementById('hero').offsetHeight;
+  const scrollProgress = Math.min(scrollY / heroH, 1); // 0 → 1 as hero scrolls out
+
+  // ── MAT ROTATION ──────────────────────────────────────────────────────────
+  // Continuous Y auto-rotation always on (360° spin)
+  // Scroll adds dramatic X tilt (flipping the mat to show back)
+  const autoRotY = t * 0.55; // continuous full 360
+  const scrollTiltX = scrollProgress * Math.PI * 1.4; // 0 → ~252° tilt on scroll
+  const scrollExtraY = scrollProgress * Math.PI * 0.8; // extra yaw on scroll
+
+  // Mouse adds a subtle tilt offset on top
+  const mouseTiltX = mouseY * 0.18;
+  const mouseTiltY = mouseX * 0.18;
+
+  matGroup.rotation.y = autoRotY + scrollExtraY + mouseTiltY;
+  matGroup.rotation.x = 0.18 + scrollTiltX + mouseTiltX;
+  matGroup.rotation.z = Math.sin(t * 0.4) * 0.02; // gentle wobble on Z
+
+  // Vertical float
+  matGroup.position.y = Math.sin(t * 0.7) * 0.12;
+
+  // ── CAMERA MOVEMENT ───────────────────────────────────────────────────────
+  // On scroll: camera dives closer and shifts angle (cinematic push-in)
+  const camZ   = 5.5 - scrollProgress * 2.8;   // 5.5 → 2.7
+  const camY   = 3.2 - scrollProgress * 2.4;   // 3.2 → 0.8
+  const camX   = mouseX * 0.25;
+
+  camera.position.x += (camX - camera.position.x) * 0.04;
+  camera.position.y += (camY - camera.position.y) * 0.04;
+  camera.position.z += (camZ - camera.position.z) * 0.04;
+  camera.lookAt(0, matGroup.position.y * 0.3, 0);
+
+  // ── ORBIT LIGHT — circles the mat ─────────────────────────────────────────
+  orbitLight.position.x = Math.cos(t * 0.8) * 4;
+  orbitLight.position.z = Math.sin(t * 0.8) * 4;
+  orbitLight.position.y = 2 + Math.sin(t * 0.4) * 1;
+  // Colour shifts: gold ↔ cool white
+  const hue = 0.1 + Math.sin(t * 0.3) * 0.04;
+  orbitLight.color.setHSL(hue, 0.6, 0.75);
+
+  // ── PARTICLES ─────────────────────────────────────────────────────────────
+  dustNear.rotation.y = t * 0.06;
+  dustNear.rotation.x = t * 0.03;
+  dustFar.rotation.y  = -t * 0.02;
+
+  // ── REFLECTION ────────────────────────────────────────────────────────────
+  reflectionMat.rotation.y = matGroup.rotation.y;
+  reflectionMat.position.y = plane.position.y + 0.01;
+  reflectionMat.material.opacity = 0.12 - scrollProgress * 0.1;
+
   renderer.render(scene, camera);
 }
 animate();
 
+// ─── RESIZE ─────────────────────────────────────────────────────────────────
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+// ─── SCROLL REVEAL ──────────────────────────────────────────────────────────
 const reveals = document.querySelectorAll('.reveal');
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
@@ -708,4 +917,3 @@ reveals.forEach(r => observer.observe(r));
 </script>
 </body>
 </html>
-
