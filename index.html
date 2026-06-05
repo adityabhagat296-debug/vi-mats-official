@@ -324,6 +324,174 @@
 
   .divider { width: 60px; height: 1px; background: var(--gold); margin: 2rem 0; }
   .divider-center { margin: 2rem auto; }
+
+  /* ── WHOLESALE FORM ──────────────────────────────────────────────────── */
+  .wholesale-section {
+    background: #0f0d0b;
+    padding: 7rem 3rem;
+    border-top: 1px solid rgba(200,169,110,0.12);
+  }
+  .wholesale-inner {
+    display: grid; grid-template-columns: 1fr 1.4fr; gap: 5rem;
+    max-width: 1200px; margin: 0 auto; align-items: start;
+  }
+
+  .ws-perks { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 0.9rem; }
+  .ws-perk {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-size: 0.82rem; color: var(--muted); letter-spacing: 0.03em;
+  }
+  .ws-perk-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--gold); flex-shrink: 0;
+  }
+
+  .ws-form-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(200,169,110,0.2);
+    overflow: hidden;
+  }
+
+  .ws-form-header {
+    background: linear-gradient(135deg, rgba(200,169,110,0.12), rgba(200,169,110,0.04));
+    padding: 2rem 2.5rem;
+    border-bottom: 1px solid rgba(200,169,110,0.15);
+  }
+  .ws-form-eyebrow {
+    font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.5rem;
+  }
+  .ws-form-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.7rem; font-weight: 300; color: var(--cream);
+  }
+
+  .ws-form-body { padding: 2rem 2.5rem; }
+
+  .ws-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+  .ws-row-full { grid-template-columns: 1fr; }
+
+  .ws-field { display: flex; flex-direction: column; gap: 0.45rem; }
+
+  .ws-label {
+    font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .ws-input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(200,169,110,0.18);
+    color: var(--cream);
+    padding: 0.75rem 1rem;
+    font-size: 0.84rem;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.25s, background 0.25s;
+    width: 100%;
+  }
+  .ws-input::placeholder { color: rgba(122,114,104,0.55); }
+  .ws-input:focus {
+    border-color: var(--gold);
+    background: rgba(200,169,110,0.05);
+  }
+  .ws-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c8a96e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+    cursor: pointer;
+  }
+  .ws-select option { background: #1a1714; color: var(--cream); }
+
+  .ws-textarea {
+    min-height: 110px; resize: vertical; line-height: 1.6;
+  }
+
+  .ws-toggle-row {
+    margin-bottom: 1.2rem;
+  }
+  .ws-toggle-label {
+    font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); display: block; margin-bottom: 0.7rem;
+  }
+  .ws-toggle-options { display: flex; gap: 0.8rem; }
+  .ws-toggle-btn {
+    flex: 1; padding: 0.65rem 1rem;
+    border: 1px solid rgba(200,169,110,0.2);
+    background: transparent; color: var(--muted);
+    font-size: 0.78rem; letter-spacing: 0.06em;
+    cursor: pointer; transition: all 0.25s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .ws-toggle-btn.active {
+    border-color: var(--gold);
+    background: rgba(200,169,110,0.1);
+    color: var(--gold);
+  }
+  .ws-toggle-btn:hover:not(.active) {
+    border-color: rgba(200,169,110,0.4);
+    color: var(--cream);
+  }
+
+  .ws-submit {
+    width: 100%; margin-top: 1.5rem;
+    background: var(--gold); color: var(--ink);
+    padding: 1rem 2rem; font-size: 0.82rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    border: none; cursor: pointer; font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+  }
+  .ws-submit:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .ws-submit:active { transform: translateY(0); }
+  .ws-submit.loading { opacity: 0.7; pointer-events: none; }
+
+  .ws-disclaimer {
+    font-size: 0.72rem; color: var(--muted);
+    text-align: center; margin-top: 1rem; letter-spacing: 0.04em;
+  }
+
+  /* Success state */
+  .ws-success {
+    padding: 4rem 2.5rem; text-align: center;
+  }
+  .ws-success-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 2px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; color: var(--gold);
+    margin: 0 auto 1.5rem;
+    animation: successPop 0.5s ease;
+  }
+  @keyframes successPop {
+    0% { transform: scale(0); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .ws-success-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem; font-weight: 300; color: var(--cream);
+    margin-bottom: 1rem;
+  }
+  .ws-success-sub {
+    font-size: 0.86rem; color: var(--muted);
+    line-height: 1.7; max-width: 360px; margin: 0 auto 1.5rem;
+  }
+  .ws-success-ref {
+    font-size: 0.72rem; color: rgba(200,169,110,0.5);
+    letter-spacing: 0.1em;
+  }
+
+  /* Input validation highlight */
+  .ws-input.error { border-color: #e05555 !important; }
+  .ws-error-msg {
+    font-size: 0.68rem; color: #e07070; margin-top: 0.3rem;
+  }
 </style>
 </head>
 <body>
@@ -335,8 +503,9 @@
     <li><a href="#how">How It Works</a></li>
     <li><a href="#market">Market</a></li>
     <li><a href="#packs">Packs</a></li>
+    <li><a href="#wholesale">Wholesale</a></li>
   </ul>
-  <button class="nav-cta">Get Wholesale</button>
+  <button class="nav-cta" onclick="document.getElementById('wholesale').scrollIntoView({behavior:'smooth'})">Get Wholesale</button>
 </nav>
 
 <section class="hero" id="hero">
@@ -546,6 +715,133 @@
   <div class="cta-btns">
     <button class="cta-btn-dark">Order Now</button>
     <button class="cta-btn-gold">Partner With Us</button>
+  </div>
+</section>
+
+<!-- WHOLESALE ORDER FORM -->
+<section class="wholesale-section" id="wholesale">
+  <div class="wholesale-inner">
+    <div class="wholesale-left reveal">
+      <p class="section-label">B2B & Wholesale</p>
+      <h2 class="section-title" style="color:var(--cream)">Let's build something<br><em style="color:var(--gold)">together</em></h2>
+      <div class="divider" style="margin-top:1.5rem;margin-bottom:1.5rem;"></div>
+      <p style="font-size:0.88rem;color:var(--muted);line-height:1.8;max-width:380px;">
+        Whether you run a single restaurant or a 200-outlet chain — VI Mats delivers at scale. Custom branding, bulk pricing, and dedicated account support.
+      </p>
+      <div class="ws-perks">
+        <div class="ws-perk"><span class="ws-perk-dot"></span>Minimum order: 500 units</div>
+        <div class="ws-perk"><span class="ws-perk-dot"></span>Custom logo & design printing</div>
+        <div class="ws-perk"><span class="ws-perk-dot"></span>Bulk pricing tiers available</div>
+        <div class="ws-perk"><span class="ws-perk-dot"></span>Pan-India delivery</div>
+        <div class="ws-perk"><span class="ws-perk-dot"></span>Dedicated account manager</div>
+        <div class="ws-perk"><span class="ws-perk-dot"></span>Sample pack before bulk order</div>
+      </div>
+    </div>
+
+    <div class="wholesale-right reveal reveal-delay-2">
+      <div class="ws-form-card">
+        <div class="ws-form-header">
+          <p class="ws-form-eyebrow">Wholesale Inquiry</p>
+          <h3 class="ws-form-title">Get a Custom Quote</h3>
+        </div>
+
+        <div class="ws-form-body" id="ws-form">
+          <!-- Row 1 -->
+          <div class="ws-row">
+            <div class="ws-field">
+              <label class="ws-label">Your Name *</label>
+              <input class="ws-input" type="text" id="ws-name" placeholder="Rahul Sharma" />
+            </div>
+            <div class="ws-field">
+              <label class="ws-label">Business Name *</label>
+              <input class="ws-input" type="text" id="ws-biz" placeholder="The Grand Café" />
+            </div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="ws-row">
+            <div class="ws-field">
+              <label class="ws-label">Phone Number *</label>
+              <input class="ws-input" type="tel" id="ws-phone" placeholder="+91 98765 43210" />
+            </div>
+            <div class="ws-field">
+              <label class="ws-label">Email Address *</label>
+              <input class="ws-input" type="email" id="ws-email" placeholder="rahul@business.com" />
+            </div>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="ws-row">
+            <div class="ws-field">
+              <label class="ws-label">Business Type *</label>
+              <select class="ws-input ws-select" id="ws-type">
+                <option value="" disabled selected>Select category</option>
+                <option>Restaurant / QSR</option>
+                <option>Café / Bakery</option>
+                <option>Hotel / Resort</option>
+                <option>Club / Lounge</option>
+                <option>Caterer / Event Planner</option>
+                <option>Retail / Distribution</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="ws-field">
+              <label class="ws-label">Estimated Quantity *</label>
+              <select class="ws-input ws-select" id="ws-qty">
+                <option value="" disabled selected>Select quantity</option>
+                <option>500 – 1,000 units</option>
+                <option>1,000 – 5,000 units</option>
+                <option>5,000 – 10,000 units</option>
+                <option>10,000 – 50,000 units</option>
+                <option>50,000+ units</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 4 -->
+          <div class="ws-row ws-row-full">
+            <div class="ws-field" style="width:100%">
+              <label class="ws-label">City / State *</label>
+              <input class="ws-input" type="text" id="ws-city" placeholder="Mumbai, Maharashtra" />
+            </div>
+          </div>
+
+          <!-- Customization toggle -->
+          <div class="ws-toggle-row">
+            <label class="ws-toggle-label">Do you need custom branding / logo printing?</label>
+            <div class="ws-toggle-options">
+              <button class="ws-toggle-btn active" id="btn-yes" onclick="selectBranding(true)">Yes, custom branding</button>
+              <button class="ws-toggle-btn" id="btn-no" onclick="selectBranding(false)">No, standard design</button>
+            </div>
+          </div>
+
+          <!-- Message -->
+          <div class="ws-row ws-row-full">
+            <div class="ws-field" style="width:100%">
+              <label class="ws-label">Additional Requirements</label>
+              <textarea class="ws-input ws-textarea" id="ws-msg" placeholder="Tell us about your specific needs — size, design references, timeline, or any other details..."></textarea>
+            </div>
+          </div>
+
+          <button class="ws-submit" onclick="submitWholesale()">
+            <span id="ws-btn-text">Submit Inquiry</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-left:0.5rem">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <p class="ws-disclaimer">We typically respond within 24 hours. No spam, ever.</p>
+        </div>
+
+        <!-- Success State -->
+        <div class="ws-success" id="ws-success" style="display:none">
+          <div class="ws-success-icon">✓</div>
+          <h3 class="ws-success-title">Inquiry Received!</h3>
+          <p class="ws-success-sub">Thank you for reaching out. Our team will contact you within 24 hours to discuss your wholesale requirements.</p>
+          <p class="ws-success-ref">Reference: <span id="ws-ref-id"></span></p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -908,7 +1204,71 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ─── SCROLL REVEAL ──────────────────────────────────────────────────────────
+// ─── WHOLESALE FORM ─────────────────────────────────────────────────────────
+let brandingChoice = true;
+
+function selectBranding(val) {
+  brandingChoice = val;
+  document.getElementById('btn-yes').classList.toggle('active', val);
+  document.getElementById('btn-no').classList.toggle('active', !val);
+}
+
+function submitWholesale() {
+  // Clear previous errors
+  document.querySelectorAll('.ws-input.error').forEach(el => el.classList.remove('error'));
+  document.querySelectorAll('.ws-error-msg').forEach(el => el.remove());
+
+  const fields = [
+    { id: 'ws-name',  label: 'Name' },
+    { id: 'ws-biz',   label: 'Business Name' },
+    { id: 'ws-phone', label: 'Phone' },
+    { id: 'ws-email', label: 'Email' },
+    { id: 'ws-type',  label: 'Business Type' },
+    { id: 'ws-qty',   label: 'Quantity' },
+    { id: 'ws-city',  label: 'City' },
+  ];
+
+  let valid = true;
+  fields.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (!el.value.trim()) {
+      el.classList.add('error');
+      const err = document.createElement('p');
+      err.className = 'ws-error-msg';
+      err.textContent = `${f.label} is required`;
+      el.parentNode.appendChild(err);
+      valid = false;
+    }
+  });
+
+  // Email format check
+  const emailEl = document.getElementById('ws-email');
+  if (emailEl.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value)) {
+    emailEl.classList.add('error');
+    const err = document.createElement('p');
+    err.className = 'ws-error-msg';
+    err.textContent = 'Enter a valid email address';
+    emailEl.parentNode.appendChild(err);
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  // Simulate submission
+  const btn = document.querySelector('.ws-submit');
+  document.getElementById('ws-btn-text').textContent = 'Submitting...';
+  btn.classList.add('loading');
+
+  setTimeout(() => {
+    document.getElementById('ws-form').style.display = 'none';
+    const success = document.getElementById('ws-success');
+    success.style.display = 'block';
+    // Generate reference ID
+    const ref = 'VI-' + Date.now().toString(36).toUpperCase().slice(-6);
+    document.getElementById('ws-ref-id').textContent = ref;
+  }, 1400);
+}
+
 const reveals = document.querySelectorAll('.reveal');
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
